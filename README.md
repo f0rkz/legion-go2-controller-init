@@ -53,6 +53,9 @@ See [SUPPORT.md](SUPPORT.md) for the compatibility matrix,
 [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for current limitations, and
 [SIGNING.md](SIGNING.md) for release provenance and Authenticode plans.
 
+The application contains no telemetry or network client. See
+[PRIVACY.md](PRIVACY.md) and [CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md).
+
 ## Repository contents
 
 - `Initialize-LegionGo2Controller.ps1` performs one-shot controller

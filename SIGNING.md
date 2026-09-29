@@ -2,50 +2,59 @@
 
 ## Current baseline
 
-Every CI-built release archive receives:
-
-- a SHA-256 checksum; and
-- when the repository is public, a GitHub artifact provenance attestation
-  generated with `actions/attest`.
+Every CI-built release archive receives a SHA-256 checksum. When the repository
+is public, CI also generates a GitHub artifact provenance attestation with
+`actions/attest`.
 
 GitHub Free supports attestations for public repositories, but not user-owned
-private repositories. The workflow skips this step while the repository is
+private repositories. The workflow skips attestation while the repository is
 private and enables it automatically after the repository becomes public.
 
-For a public repository, contributors can verify provenance with:
+Consumers can verify an attested public build with:
 
 ```powershell
-gh attestation verify .\LegionGo2ControllerBridge-win-x64.zip -R OWNER/REPOSITORY
+gh attestation verify .\LegionGo2ControllerBridge-win-x64.zip -R f0rkz/legion-go2-controller-init
 ```
 
-This establishes which repository, workflow, commit, and build environment
-produced the archive. It does not create a Windows Authenticode signature or
-remove SmartScreen warnings by itself.
+Provenance establishes which repository, workflow, commit, and build
+environment produced an archive. It does not create a Windows Authenticode
+signature or remove SmartScreen warnings by itself.
 
-## Planned Authenticode signing
+## Preferred Authenticode path: SignPath Foundation
 
-Microsoft Azure Artifact Signing Public Trust is the preferred design because
-it keeps certificate key material in a managed service and supports GitHub
-Actions authentication through OIDC. The release workflow should eventually:
+The project intends to apply to SignPath Foundation for its free open-source
+code-signing program. SignPath provides qualifying projects with Authenticode
+signatures under a certificate issued to SignPath Foundation, keeps private key
+material in an HSM, and verifies that submitted binaries originated from the
+declared source repository and trusted build system.
 
-1. Publish the self-contained executable into a staging directory.
-2. Authenticate to Azure using a federated GitHub identity.
-3. Sign `LegionGo2ControllerBridge.exe` with
-   `azure/artifact-signing-action@v1` and an RFC 3161 timestamp.
-4. Verify the Authenticode signature and certificate chain.
-5. Package the signed executable, generate its checksum, and attest the final
-   ZIP—not the unsigned intermediate.
+Before applying, this project must:
 
-Required external setup:
+- remain entirely open source under the MIT license;
+- make the repository and build history public;
+- publish an initial unsigned release in the form intended for signing;
+- require MFA for maintainers and repository access;
+- document functionality, privacy, signing policy, and project roles;
+- keep release builds reproducible through GitHub Actions; and
+- accept manual approval and origin verification for release signing.
 
-- an Azure Artifact Signing account;
-- completed individual or organization identity validation;
-- a Public Trust certificate profile;
-- the `Artifact Signing Certificate Profile Signer` role for the federated
-  identity; and
-- GitHub environment variables for the signing endpoint, account, profile,
-  Azure tenant, and client IDs.
+SignPath Foundation, rather than an individual maintainer, appears as the
+certificate publisher. Approval is discretionary, and new projects may need to
+establish maintenance history and reputation before acceptance.
 
-Do not store a PFX or long-lived Azure client secret in the repository. Until
-Artifact Signing is configured, releases must be labeled unsigned prereleases
-and accompanied by checksums and provenance attestations.
+See [CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md) and
+[PRIVACY.md](PRIVACY.md).
+
+## Other options
+
+- **Microsoft Store/MSIX:** Microsoft signs Store-distributed MSIX packages at
+  no additional certificate cost. This application would need packaging and
+  lifecycle changes, and Store policy review, before that route is viable.
+- **Unsigned ZIP plus attestations:** Free and transparent, but users may still
+  see SmartScreen warnings. This is acceptable for alpha testing.
+- **Self-signed Authenticode:** Useful only for local development or managed
+  fleets where the root certificate can be distributed out of band. Requiring
+  community users to trust a custom root is not acceptable release UX.
+- **Commercial certificate or Azure Artifact Signing:** Technically sound but
+  rejected for now because maintainers should not pay recurring signing fees to
+  distribute a workaround for Lenovo software defects.
