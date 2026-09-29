@@ -5,7 +5,12 @@
 Every CI-built release archive receives:
 
 - a SHA-256 checksum; and
-- a GitHub artifact provenance attestation generated with `actions/attest`.
+- when the repository is public, a GitHub artifact provenance attestation
+  generated with `actions/attest`.
+
+GitHub Free supports attestations for public repositories, but not user-owned
+private repositories. The workflow skips this step while the repository is
+private and enables it automatically after the repository becomes public.
 
 For a public repository, contributors can verify provenance with:
 

@@ -37,6 +37,7 @@ jobs:
           if-no-files-found: error
 
       - name: Attest release archive provenance
+        if: github.event.repository.private == false
         uses: actions/attest@v4
         with:
           subject-path: artifacts/LegionGo2ControllerBridge-win-x64.zip
