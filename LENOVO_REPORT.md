@@ -101,13 +101,16 @@ In some failures, `0x00000800` remains present across subsequent callbacks
 instead of returning to zero. Based on the bundled API's documented button
 ordering and observed behavior:
 
-- `0x00000800` is the logical Legion R button bit.
+- `0x00000800` is bit 11, mapped to Menu in Lenovo's header. Legion L is bit
+  10 and Legion R is bit 12.
 - `0x40000000` is a synthesized Desktop/action bit.
 
-The identification of `0x00000800` as Legion R is strongly supported; the
-meaning of `0x40000000` is inferred from repeated traces. The directly observed
-defect is that the logical Legion R state can remain asserted after physical
-release.
+The physical right-button press repeatedly correlates with the combined
+`0x40000800` value, but the stale `0x800` component is Menu according to Lenovo's
+header, not Legion R. The meaning of `0x40000000` as a synthesized Desktop
+action is inferred from repeated traces and observed UI behavior. The directly
+observed defect is that the Menu bit may remain present in subsequent callback
+values after a press.
 
 Changing `GetLegionLRAndMenuViewMode()` was investigated but does not explain
 the defect. The mode was later observed as `0` while Task View still occurred.
@@ -141,8 +144,8 @@ used as a toggle.
 These results isolate three lifecycle problems:
 
 1. Controller initialization is coupled to the Controllers page.
-2. The raw/logical Legion R release state can become stale, and the shortcut
-   dispatcher can select `WinTabView` or no operation instead of `OperatingMenu`.
+2. The raw Menu bit can remain stale, and the shortcut dispatcher can select
+   `WinTabView` or no operation instead of `OperatingMenu`.
 3. The drawer process and its IPC server can exit without the shortcut path
    reliably relaunching them.
 
@@ -153,8 +156,8 @@ These results isolate three lifecycle problems:
 - Make initialization idempotent and serialize access to the vendor HID
   endpoint across Legion Space components.
 - Reset button state on device generation changes, suspend/resume, callback
-  registration, and reader restart. Never preserve an asserted Legion R bit
-  across those boundaries.
+  registration, and reader restart. Never preserve stale Menu or shortcut
+  action bits across those boundaries.
 - Route the right Legion button from a debounced press/release edge rather than
   a stale level bitmask.
 - Keep the side-drawer action distinct from the `WinTabView` action and log the
@@ -174,9 +177,9 @@ business command, IPC result, and resume/rebind generation.
 
 The accompanying experimental helper loads only Lenovo DLLs already installed
 on the device; it does not modify or redistribute them. A one-shot initializer
-restores XInput. A resident diagnostic bridge observes the broken Legion R bit,
-starts the installed drawer process when necessary, and sends business command
-`0` through Lenovo's existing IPC interface.
+restores XInput. A resident diagnostic bridge observes the broken combined
+Desktop/Menu signature, starts the installed drawer process when necessary,
+and sends business command `0` through Lenovo's existing IPC interface.
 
 This workaround is evidence and a temporary compatibility measure. The proper
 fix belongs in Legion Space and its daemon/controller lifecycle.

@@ -28,10 +28,12 @@ Healthy: 0x40000000 -> 0x00000000
 Broken:  0x40000800 -> 0x00000800
 ```
 
-`0x00000800` is the logical Legion R bit and can remain asserted after physical
-release. Lenovo's installed menu dispatcher separately implements business
-command `0` (`OperatingMenu`) and command `12` (`WinTabView`), explaining why
-the broken software path explicitly opens Task View.
+Lenovo's header maps bit 11 (`0x00000800`) to Menu, bit 10 to Legion L, and bit
+12 to Legion R. The broken callback therefore contains a stale Menu bit alongside
+the synthesized Desktop/action bit. Lenovo's installed menu dispatcher
+separately implements business command `0` (`OperatingMenu`) and command `12`
+(`WinTabView`), explaining why the software can route the physical right-button
+press inconsistently.
 
 The drawer can be toggled deterministically through Lenovo's existing IPC:
 
@@ -83,8 +85,9 @@ logon task. Only one instance can run per user session. Runtime logs are written
 beside the executable as `tray.log`.
 
 The recovery state machine only acts on `0x40000800`, the observed broken press
-signature. It deliberately ignores the trailing `0x00000800` stale-release
-state, preventing a long press from causing a second toggle.
+signature (Desktop action plus stale Menu bit). It deliberately ignores the
+trailing `0x00000800` stale state, preventing a long press from causing a second
+toggle. The bridge does not remap or synthesize Legion L input.
 
 ## Installing a release
 
@@ -125,6 +128,9 @@ This publishes a self-contained single-file `win-x64` application and creates a
 ZIP plus SHA-256 checksum under `artifacts`. The GitHub Actions workflow performs
 the same build for pushes, pull requests, tags, and manual runs.
 
+Pushing a `v*` tag also publishes a GitHub prerelease with the ZIP, checksum,
+release notes, and (for this public repository) a provenance attestation.
+
 ## Status and limitations
 
 This is reverse-engineered, device-specific, experimental software. The
@@ -133,9 +139,11 @@ sleep/resume, and controller reconnect testing. It is not yet a packaged
 release.
 
 The drawer currently opens and closes consistently in testing, but Lenovo may
-also dispatch Windows Task View for the same broken press. Foreground-window
-tracing is present to identify and narrowly suppress that parallel action; this
-is not yet resolved and should be called out in pre-release notes.
+also dispatch Windows Task View for the same broken press. The left Legion
+button has not been revalidated since the bridge was installed. The bridge does
+not intentionally alter its input, but this release makes no claim that the
+left Legion shortcut works. Both limitations are called out in the alpha
+release notes.
 
 PowerShell must not be invoked from Lenovo's native button callback thread.
 Doing so caused `powershell.exe` to terminate with `0xc0000409` in

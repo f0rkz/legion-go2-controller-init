@@ -19,6 +19,8 @@
   before Legion Space was opened.
 - Repeated side-drawer open/close tests passed on the Windows desktop and in
   Steam Big Picture Mode.
+- The left Legion shortcut has not been revalidated with the tray bridge
+  active and remains unverified for this alpha.
 
 Windows retained the previous kernel boot timestamp during this test, as
 expected with Fast Startup. A Windows Restart and a later Modern Standby cycle

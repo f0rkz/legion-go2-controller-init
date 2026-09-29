@@ -19,6 +19,12 @@ Only the Legion Go 2 Sapientia implementation and the tested USB identity are
 known to use the observed ABI and button masks. Huaqin, original Legion Go, and
 Legion Go S support must be validated independently.
 
+## Left Legion shortcut not yet validated
+
+The physical left Legion shortcut was not re-tested after the tray bridge was
+installed. The bridge only reacts to callback mask `0x40000800` and does not
+intentionally remap Legion L, but this alpha does not claim left-button support.
+
 ## Legion Space updates may change private interfaces
 
 The application dynamically locates Lenovo's installed DLLs but depends on

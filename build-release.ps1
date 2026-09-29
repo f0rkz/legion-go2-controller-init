@@ -35,6 +35,7 @@ Copy-Item (Join-Path $PSScriptRoot 'Collect-Diagnostics.ps1') $stageDirectory
 Copy-Item (Join-Path $PSScriptRoot 'SIGNING.md') $stageDirectory
 Copy-Item (Join-Path $PSScriptRoot 'CODE_SIGNING_POLICY.md') $stageDirectory
 Copy-Item (Join-Path $PSScriptRoot 'PRIVACY.md') $stageDirectory
+Copy-Item (Join-Path $PSScriptRoot 'RELEASE_NOTES.md') $stageDirectory
 
 Compress-Archive -Path (Join-Path $stageDirectory '*') -DestinationPath $archive
 $hash = Get-FileHash $archive -Algorithm SHA256
