@@ -11,6 +11,19 @@
 | Windows | Windows 11, build family `26100` | Supported |
 | Architecture | x64 | Required |
 
+## Completed validation
+
+- Power-cycle/sign-in through the normal Windows Fast Startup path: passed.
+- Interactive logon task started the tray process successfully.
+- Controller initialization returned `1` and callback registration succeeded
+  before Legion Space was opened.
+- Repeated side-drawer open/close tests passed on the Windows desktop and in
+  Steam Big Picture Mode.
+
+Windows retained the previous kernel boot timestamp during this test, as
+expected with Fast Startup. A Windows Restart and a later Modern Standby cycle
+remain separate validation cases.
+
 Other Legion Space versions may work because the application discovers the
 installed version dynamically. They are unverified until someone supplies a
 diagnostic bundle and confirms cold boot and resume behavior.
